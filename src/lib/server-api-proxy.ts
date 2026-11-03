@@ -21,7 +21,7 @@ export const proxyApiCall = createServerFn({ method: "POST" })
       const response = await fetch(data.url, {
         method: data.method || "GET",
         headers: data.headers || {},
-        body: data.body,
+        body: data.body ?? null,
       });
 
       const text = await response.text();

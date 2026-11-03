@@ -23,8 +23,8 @@ describe("useApiKeyStore", () => {
 
     const groqKeys = useApiKeyStore.getState().getProviderKeys("Groq");
     expect(groqKeys.length).toBe(2);
-    expect(groqKeys[0].id).toBe(id1);
-    expect(groqKeys[1].id).toBe(id2);
+    expect(groqKeys[0]!.id).toBe(id1);
+    expect(groqKeys[1]!.id).toBe(id2);
   });
 
   it("marks key exhausted with reset timestamp and fail count", () => {
@@ -65,7 +65,7 @@ describe("useApiKeyStore", () => {
 
     const activeKeys = useApiKeyStore.getState().getActiveKeys("OpenRouter");
     expect(activeKeys.length).toBe(1);
-    expect(activeKeys[0].status).toBe("active");
+    expect(activeKeys[0]!.status).toBe("active");
   });
 
   it("selects next active key using least-recently-used (LRU) order", () => {

@@ -91,7 +91,10 @@ export function AgentChat({
 
     const chatMessages: ChatMessage[] = [
       { role: "system", content: agentConfig.systemPrompt },
-      ...messages.slice(-10).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
+      ...messages.slice(-10).map((m): ChatMessage => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.text,
+      })),
       { role: "user", content: question },
     ];
 
@@ -100,7 +103,7 @@ export function AgentChat({
         messages: chatMessages,
         domains: agentConfig.domains,
         grounded: true,
-        preferredModel: agentConfig.preferredModel,
+        ...(agentConfig.preferredModel ? { preferredModel: agentConfig.preferredModel } : {}),
         agentName: active,
       });
 
@@ -114,7 +117,7 @@ export function AgentChat({
             {
               role: "agent",
               text: result.content,
-              citations: result.citations,
+              ...(result.citations ? { citations: result.citations } : {}),
               sourcesUsed: agentConfig.domains,
             },
           ],

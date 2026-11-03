@@ -27,7 +27,7 @@ function SettingsPage() {
               <p className="text-xs text-muted-foreground">ORION Personal Intelligence System</p>
             </div>
           </div>
-          <Link href="/">
+          <Link to="/">
             <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-xs">
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>হোমে ফিরে যান</span>
