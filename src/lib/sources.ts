@@ -23,6 +23,7 @@ export type AgentDefinition = {
   prompts: string[];
   preferredModel?: string;
   isSuperAgent?: boolean;
+  instruction?: string;
 };
 
 export const DEFAULT_INTELLIGENCE_AGENTS: AgentDefinition[] = [

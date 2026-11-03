@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, MessageCircle, RefreshCw, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { ArrowLeft, ExternalLink, MessageCircle, Plus, RefreshCw, X } from "lucide-react";
 import { AgentChat } from "@/components/agent-chat";
-import { usePersonalData } from "@/components/personal-tools";
+import { usePersonalData, usePersisted } from "@/components/personal-tools";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useApiRouter } from "@/hooks/use-api-router";
 import { seedDefaultKeys } from "@/lib/api-key-store";
-import { DEFAULT_INTELLIGENCE_AGENTS } from "@/lib/sources";
+import { DEFAULT_INTELLIGENCE_AGENTS, customSectorToAgent, type CustomSector } from "@/lib/sources";
 import { buildRewritePrompt, parseArticles, todayKey, type FeedArticle } from "@/lib/feed";
 
 export const Route = createFileRoute("/feed")({
@@ -22,12 +24,19 @@ export const Route = createFileRoute("/feed")({
   component: FeedPage,
 });
 
-const sectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent);
-const chatAgents = DEFAULT_INTELLIGENCE_AGENTS.map((a) => ({ name: a.name, desc: a.desc, icon: a.icon }));
+const baseSectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent);
+const superAgent = DEFAULT_INTELLIGENCE_AGENTS.find((a) => a.isSuperAgent)!;
 
 function FeedPage() {
-  const [sectorId, setSectorId] = useState(sectors[0]!.id);
-  const sector = sectors.find((s) => s.id === sectorId)!;
+  const [customSectors, setCustomSectors] = usePersisted<CustomSector[]>("orion.customSectors", []);
+  const allSectors = useMemo(() => [...baseSectors, ...customSectors.map(customSectorToAgent)], [customSectors]);
+  const chatAgents = useMemo(
+    () => [...allSectors, superAgent].map((a) => ({ name: a.name, desc: a.desc, icon: a.icon })),
+    [allSectors],
+  );
+  const [sectorId, setSectorId] = useState(baseSectors[0]!.id);
+  const sector = allSectors.find((s) => s.id === sectorId) ?? allSectors[0]!;
+  const [addOpen, setAddOpen] = useState(false);
   const [articles, setArticles] = useState<FeedArticle[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +57,13 @@ function FeedPage() {
     }
     setLoading(true); setError(null); setArticles([]);
     try {
-      const search = await searchWithFallback(`${sector.name.replace(" Intelligence", "")} latest news today`, sector.domains);
+      const query = `${sector.name.replace(" Intelligence", "")} latest news today${sector.instruction ? ` ${sector.instruction}` : ""}`;
+      const search = await searchWithFallback(query, sector.domains);
       if (!search.success || !search.items.length) throw new Error("আজকের খবর পাওয়া যায়নি।");
       const res = await chatWithFallback({
         messages: [
           { role: "system", content: "You are a careful news editor. Output strict JSON only." },
-          { role: "user", content: buildRewritePrompt(sector.name, search.items) },
+          { role: "user", content: buildRewritePrompt(sector.name, search.items, sector.instruction) },
         ],
         maxTokens: 3500,
       });
@@ -75,6 +85,18 @@ function FeedPage() {
     setChatOpen(true);
   }
 
+  function addSector(name: string, shortName: string, instruction: string) {
+    const id = `custom-${crypto.randomUUID().slice(0, 8)}`;
+    setCustomSectors((cs) => [...cs, { id, name, shortName, instruction }]);
+    setSectorId(id);
+  }
+
+  function removeSector(id: string) {
+    setCustomSectors((cs) => cs.filter((c) => c.id !== id));
+    Object.keys(localStorage).forEach((k) => { if (k.startsWith(`orion.feed.${id}.`)) localStorage.removeItem(k); });
+    if (id === sectorId) setSectorId(allSectors.find((s) => s.id !== id)!.id);
+  }
+
   const [lead, ...rest] = articles;
 
   return (
@@ -94,13 +116,24 @@ function FeedPage() {
             </button>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-[1160px] gap-2 overflow-x-auto px-5 pb-3">
-          {sectors.map((s) => (
-            <button key={s.id} onClick={() => setSectorId(s.id)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition ${s.id === sectorId ? "bg-ink text-ink-foreground" : "bg-card border border-border hover:bg-muted"}`}>
-              {s.shortName ?? s.name}
-            </button>
+        <nav className="mx-auto flex max-w-[1160px] items-center gap-2 overflow-x-auto px-5 pb-3">
+          {allSectors.map((s) => (
+            <span key={s.id} className="inline-flex items-center">
+              <button onClick={() => setSectorId(s.id)}
+                className={`whitespace-nowrap rounded-full py-1.5 text-xs font-medium transition ${s.id === sectorId ? "bg-ink text-ink-foreground" : "bg-card border border-border hover:bg-muted"} ${s.instruction ? "pl-3.5 pr-2" : "px-3.5"}`}>
+                {s.shortName ?? s.name}
+              </button>
+              {s.instruction && (
+                <button aria-label={`${s.name} ক্যাটাগরি মুছুন`} onClick={() => removeSector(s.id)}
+                  className={`-ml-0.5 rounded-full p-1.5 transition ${s.id === sectorId ? "text-ink-foreground/70 hover:text-ink-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </span>
           ))}
+          <button onClick={() => setAddOpen(true)} aria-label="নতুন ক্যাটাগরি যোগ করুন" className="grid size-7 shrink-0 place-items-center rounded-full border border-dashed border-border text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Plus className="h-3.5 w-3.5" />
+          </button>
         </nav>
       </header>
 
@@ -176,6 +209,7 @@ function FeedPage() {
         </div>
       )}
 
+      <AddSectorDialog open={addOpen} onOpenChange={setAddOpen} onAdd={addSector} />
       <AgentChat
         agents={chatAgents}
         active={chatAgent}
