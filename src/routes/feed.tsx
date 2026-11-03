@@ -116,13 +116,24 @@ function FeedPage() {
             </button>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-[1160px] gap-2 overflow-x-auto px-5 pb-3">
-          {sectors.map((s) => (
-            <button key={s.id} onClick={() => setSectorId(s.id)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition ${s.id === sectorId ? "bg-ink text-ink-foreground" : "bg-card border border-border hover:bg-muted"}`}>
-              {s.shortName ?? s.name}
-            </button>
+        <nav className="mx-auto flex max-w-[1160px] items-center gap-2 overflow-x-auto px-5 pb-3">
+          {allSectors.map((s) => (
+            <span key={s.id} className="inline-flex items-center">
+              <button onClick={() => setSectorId(s.id)}
+                className={`whitespace-nowrap rounded-full py-1.5 text-xs font-medium transition ${s.id === sectorId ? "bg-ink text-ink-foreground" : "bg-card border border-border hover:bg-muted"} ${s.instruction ? "pl-3.5 pr-2" : "px-3.5"}`}>
+                {s.shortName ?? s.name}
+              </button>
+              {s.instruction && (
+                <button aria-label={`${s.name} ক্যাটাগরি মুছুন`} onClick={() => removeSector(s.id)}
+                  className={`-ml-0.5 rounded-full p-1.5 transition ${s.id === sectorId ? "text-ink-foreground/70 hover:text-ink-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </span>
           ))}
+          <button onClick={() => setAddOpen(true)} aria-label="নতুন ক্যাটাগরি যোগ করুন" className="grid size-7 shrink-0 place-items-center rounded-full border border-dashed border-border text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Plus className="h-3.5 w-3.5" />
+          </button>
         </nav>
       </header>
 
@@ -198,6 +209,7 @@ function FeedPage() {
         </div>
       )}
 
+      <AddSectorDialog open={addOpen} onOpenChange={setAddOpen} onAdd={addSector} />
       <AgentChat
         agents={chatAgents}
         active={chatAgent}

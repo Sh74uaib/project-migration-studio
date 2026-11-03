@@ -16,12 +16,13 @@ export function todayKey(sectorId: string, d = new Date()) {
   return `orion.feed.${sectorId}.${day}`;
 }
 
-export function buildRewritePrompt(sectorName: string, items: SearchResultItem[]) {
+export function buildRewritePrompt(sectorName: string, items: SearchResultItem[], focus?: string) {
   const list = items
     .slice(0, 8)
     .map((r, i) => `[${i + 1}] ${r.title}\nURL: ${r.url}\nSource: ${r.source ?? ""}\n${r.snippet}`)
     .join("\n\n");
-  return `You are ORION's editorial desk for "${sectorName}". Below are today's raw news results.
+  const focusLine = focus ? `The reader defined this section's editorial focus: "${focus}". Prioritize stories that match it.\n` : "";
+  return `You are ORION's editorial desk for "${sectorName}". ${focusLine}Below are today's raw news results.
 Analyze them, merge duplicates, drop irrelevant ones, and rewrite each real story as a clean, neutral, easy-to-read article in fluent Bengali.
 
 Return ONLY a JSON array (no markdown, no commentary) of up to 6 objects:
