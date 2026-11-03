@@ -1,0 +1,76 @@
+{
+  "source": "code-archive",
+  "sourceProject": "Orion Hub AI (Lovable export, TanStack Start)",
+  "capabilities": [
+    {
+      "capability": "code",
+      "source": "ZIP export",
+      "outcome": "migrate",
+      "status": "done",
+      "next_action": null
+    },
+    {
+      "capability": "schema",
+      "source": "none (no database)",
+      "outcome": "none",
+      "status": "n/a",
+      "next_action": null
+    },
+    {
+      "capability": "records",
+      "source": "localStorage (orion.apiKeys, orion.customAgents, etc.)",
+      "outcome": "client-side, carried by code",
+      "status": "n/a",
+      "next_action": null
+    },
+    {
+      "capability": "auth",
+      "source": "none",
+      "outcome": "none",
+      "status": "n/a",
+      "next_action": null
+    },
+    {
+      "capability": "api-key-pool router",
+      "source": "zustand store + server API proxy",
+      "outcome": "migrate",
+      "status": "done",
+      "next_action": null
+    },
+    {
+      "capability": "server functions",
+      "source": "proxyApiCall createServerFn",
+      "outcome": "migrate",
+      "status": "done",
+      "next_action": null
+    },
+    {
+      "capability": "provider credentials",
+      "source": "hardcoded seed keys in api-key-store.ts (user-owned)",
+      "outcome": "preserved as-is",
+      "status": "done",
+      "next_action": null
+    },
+    {
+      "capability": "external services",
+      "source": "Groq/OpenRouter/Mistral/Gemini, Tavily/Exa/Serper/You.com, news APIs",
+      "outcome": "preserved",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "tests",
+      "source": "api-key-store.test.ts, smart-router.test.ts",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "verification",
+      "source": "-",
+      "outcome": "verify",
+      "status": "verified",
+      "next_action": null
+    }
+  ]
+}

@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Keep sector chat in a dedicated controlled sheet component with per-sector in-memory conversations; this isolates the UI-first demo from future live news and AI integration.
