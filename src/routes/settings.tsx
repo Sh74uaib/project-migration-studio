@@ -8,6 +8,10 @@ export const Route = createFileRoute("/settings")({
     meta: [
       { title: "Settings — API Key Management | ORION" },
       { name: "description", content: "Manage your API keys, pools, and failover router." },
+      { property: "og:title", content: "Settings — API Key Management | ORION" },
+      { property: "og:description", content: "Manage your API keys, pools, and failover router." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SettingsPage,
