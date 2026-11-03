@@ -71,7 +71,7 @@ function FeedPage() {
 
   function ask(q?: string) {
     setChatAgent(sector.name);
-    setQuestion(q ? `${q} #${Date.now()}`.replace(/ #\d+$/, "") + "\u200b".repeat(Date.now() % 7) : undefined);
+    setQuestion(q);
     setChatOpen(true);
   }
 

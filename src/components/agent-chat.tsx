@@ -149,7 +149,8 @@ export function AgentChat({
   const sentInitial = useRef<string | null>(null);
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    if (!open || !initialQuestion || sentInitial.current === initialQuestion) return;
+    if (!open) { sentInitial.current = null; return; }
+    if (!initialQuestion || sentInitial.current === initialQuestion) return;
     sentInitial.current = initialQuestion;
     void send(initialQuestion);
     // eslint-disable-next-line react-hooks/exhaustive-deps
