@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, MessageCircle, RefreshCw, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { ArrowLeft, ExternalLink, MessageCircle, Plus, RefreshCw, X } from "lucide-react";
 import { AgentChat } from "@/components/agent-chat";
-import { usePersonalData } from "@/components/personal-tools";
+import { usePersonalData, usePersisted } from "@/components/personal-tools";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useApiRouter } from "@/hooks/use-api-router";
 import { seedDefaultKeys } from "@/lib/api-key-store";
-import { DEFAULT_INTELLIGENCE_AGENTS } from "@/lib/sources";
+import { DEFAULT_INTELLIGENCE_AGENTS, customSectorToAgent, type CustomSector } from "@/lib/sources";
 import { buildRewritePrompt, parseArticles, todayKey, type FeedArticle } from "@/lib/feed";
 
 export const Route = createFileRoute("/feed")({
@@ -22,12 +24,19 @@ export const Route = createFileRoute("/feed")({
   component: FeedPage,
 });
 
-const sectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent);
-const chatAgents = DEFAULT_INTELLIGENCE_AGENTS.map((a) => ({ name: a.name, desc: a.desc, icon: a.icon }));
+const baseSectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent);
+const superAgent = DEFAULT_INTELLIGENCE_AGENTS.find((a) => a.isSuperAgent)!;
 
 function FeedPage() {
-  const [sectorId, setSectorId] = useState(sectors[0]!.id);
-  const sector = sectors.find((s) => s.id === sectorId)!;
+  const [customSectors, setCustomSectors] = usePersisted<CustomSector[]>("orion.customSectors", []);
+  const allSectors = useMemo(() => [...baseSectors, ...customSectors.map(customSectorToAgent)], [customSectors]);
+  const chatAgents = useMemo(
+    () => [...allSectors, superAgent].map((a) => ({ name: a.name, desc: a.desc, icon: a.icon })),
+    [allSectors],
+  );
+  const [sectorId, setSectorId] = useState(baseSectors[0]!.id);
+  const sector = allSectors.find((s) => s.id === sectorId) ?? allSectors[0]!;
+  const [addOpen, setAddOpen] = useState(false);
   const [articles, setArticles] = useState<FeedArticle[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +57,13 @@ function FeedPage() {
     }
     setLoading(true); setError(null); setArticles([]);
     try {
-      const search = await searchWithFallback(`${sector.name.replace(" Intelligence", "")} latest news today`, sector.domains);
+      const query = `${sector.name.replace(" Intelligence", "")} latest news today${sector.instruction ? ` ${sector.instruction}` : ""}`;
+      const search = await searchWithFallback(query, sector.domains);
       if (!search.success || !search.items.length) throw new Error("আজকের খবর পাওয়া যায়নি।");
       const res = await chatWithFallback({
         messages: [
           { role: "system", content: "You are a careful news editor. Output strict JSON only." },
-          { role: "user", content: buildRewritePrompt(sector.name, search.items) },
+          { role: "user", content: buildRewritePrompt(sector.name, search.items, sector.instruction) },
         ],
         maxTokens: 3500,
       });
@@ -73,6 +83,18 @@ function FeedPage() {
     setChatAgent(sector.name);
     setQuestion(q);
     setChatOpen(true);
+  }
+
+  function addSector(name: string, shortName: string, instruction: string) {
+    const id = `custom-${crypto.randomUUID().slice(0, 8)}`;
+    setCustomSectors((cs) => [...cs, { id, name, shortName, instruction }]);
+    setSectorId(id);
+  }
+
+  function removeSector(id: string) {
+    setCustomSectors((cs) => cs.filter((c) => c.id !== id));
+    Object.keys(localStorage).forEach((k) => { if (k.startsWith(`orion.feed.${id}.`)) localStorage.removeItem(k); });
+    if (id === sectorId) setSectorId(allSectors.find((s) => s.id !== id)!.id);
   }
 
   const [lead, ...rest] = articles;
