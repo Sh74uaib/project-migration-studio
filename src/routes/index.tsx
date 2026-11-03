@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -172,6 +172,7 @@ function Index() {
             {!searching && q.trim() && searchResults.length > 0 && <button onClick={() => handleSearch(q)} className="text-xs text-brand underline">অনুসন্ধান করুন</button>}
           </label>
           <div className="ml-auto flex items-center gap-2 md:ml-0">
+            <Link to="/feed" className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted">Feed</Link>
             <button
               onClick={() => {
                 setSettingsProvider(undefined);

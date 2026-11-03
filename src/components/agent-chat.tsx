@@ -35,6 +35,7 @@ type Props = {
   onAgentChange: (name: string) => void;
   watchlist: string[];
   onSaveNote: (sector: string, text: string) => void;
+  initialQuestion?: string;
 };
 
 export function AgentChat({
@@ -45,6 +46,7 @@ export function AgentChat({
   onAgentChange,
   watchlist,
   onSaveNote,
+  initialQuestion,
 }: Props) {
   const [customAgents] = usePersisted<CustomAgentItem[]>("orion.customAgents", []);
   const [histories, setHistories] = usePersisted<Record<string, Message[]>>("orion.histories", {});
@@ -142,6 +144,17 @@ export function AgentChat({
       timer.current = null;
     }
   }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const sentInitial = useRef<string | null>(null);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (!open) { sentInitial.current = null; return; }
+    if (!initialQuestion || sentInitial.current === initialQuestion) return;
+    sentInitial.current = initialQuestion;
+    void send(initialQuestion);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialQuestion]);
 
   if (!open || !agent) return null;
   const Icon = agent.icon;
