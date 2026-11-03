@@ -292,3 +292,28 @@ export function buildDomainFilteredQuery(query: string, domains: string[]): stri
   const siteFilter = domains.map((d) => `site:${d.replace(/^https?:\/\//, "").replace(/\/.*$/, "")}`).join(" OR ");
   return `${cleanQ} (${siteFilter})`;
 }
+
+export type CustomSector = {
+  id: string;
+  name: string;
+  shortName: string;
+  instruction: string;
+};
+
+export function customSectorToAgent(c: CustomSector): AgentDefinition {
+  return {
+    id: c.id,
+    name: c.name,
+    shortName: c.shortName || c.name.slice(0, 4),
+    desc: c.instruction,
+    iconName: "Sparkles",
+    icon: Sparkles,
+    domains: [],
+    instruction: c.instruction,
+    systemPrompt: `You are the "${c.name}" intelligence agent of ORION. The reader defined this topic: "${c.instruction}". Cover only news, facts and analysis relevant to this topic, and explain the context simply. Answer in fluent Bengali (or English if asked). Current year is 2026.`,
+    prompts: [
+      `আজকের ${c.name} সংক্রান্ত সব খবরের ব্রিফিং দাও`,
+      "এই বিষয়ের মূল পয়েন্টগুলো বিশ্লেষণ করো",
+    ],
+  };
+}

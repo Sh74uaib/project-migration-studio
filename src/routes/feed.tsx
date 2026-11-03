@@ -223,3 +223,45 @@ function FeedPage() {
     </div>
   );
 }
+
+function AddSectorDialog({ open, onOpenChange, onAdd }: { open: boolean; onOpenChange: (o: boolean) => void; onAdd: (name: string, shortName: string, instruction: string) => void }) {
+  const [name, setName] = useState("");
+  const [shortName, setShortName] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const valid = Boolean(name.trim() && instruction.trim());
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!valid) return;
+    onAdd(name.trim(), shortName.trim() || name.trim().slice(0, 4), instruction.trim());
+    setName(""); setShortName(""); setInstruction("");
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogTitle className="font-display text-2xl">নতুন ক্যাটাগরি যোগ করুন</DialogTitle>
+        <DialogDescription>AI আপনার দেওয়া নির্দেশনা মেনে এই ক্যাটাগরির খবর সংগ্রহ ও সাজিয়ে দেখাবে।</DialogDescription>
+        <form className="space-y-4" onSubmit={submit}>
+          <div>
+            <label htmlFor="sector-name" className="text-xs font-semibold">ক্যাটাগরির নাম</label>
+            <input id="sector-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="যেমন: খেলাধুলা" className="mt-1.5 h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring" />
+          </div>
+          <div>
+            <label htmlFor="sector-short" className="text-xs font-semibold">ছোট নাম (উপরের ট্যাবে দেখাবে)</label>
+            <input id="sector-short" value={shortName} onChange={(e) => setShortName(e.target.value)} placeholder="যেমন: খেলা" className="mt-1.5 h-10 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring" />
+          </div>
+          <div>
+            <label htmlFor="sector-instruction" className="text-xs font-semibold">এই ক্যাটাগরিতে আপনি কী কী খবর চান?</label>
+            <textarea id="sector-instruction" value={instruction} onChange={(e) => setInstruction(e.target.value)} rows={3} placeholder="যেমন: ফুটবল ও ক্রিকেটের ম্যাচ রিপোর্ট, ট্রান্সফার নিউজ আর বাংলাদেশি খেলোয়াড়দের আপডেট" className="mt-1.5 min-h-24 w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>বাতিল</Button>
+            <Button type="submit" disabled={!valid}>যোগ করুন</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
