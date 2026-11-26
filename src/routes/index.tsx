@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -48,6 +48,7 @@ const defaultAgents = DEFAULT_INTELLIGENCE_AGENTS.map((a) => ({
   desc: a.desc,
   id: a.id,
   isSuperAgent: a.isSuperAgent,
+  isVideoAgent: a.isVideoAgent,
 }));
 
 const stories = [
@@ -58,6 +59,7 @@ const stories = [
 ];
 
 function Index() {
+  const navigate = useNavigate();
   const [now, setNow] = useState<Date | null>(null);
   const [q, setQ] = useState("");
   const [active, setActive] = useState("Bangladesh");
@@ -90,6 +92,8 @@ function Index() {
 
   const allAgents = [...defaultAgents, ...customAgentItems];
   const visibleAgents = allAgents.filter((a) => !hidden.includes(a.name));
+  const chatAgents = visibleAgents.filter((agent) => !agent.isVideoAgent);
+  const fallbackChatAgents = defaultAgents.filter((agent) => !agent.isVideoAgent);
 
   const createAgent = (name: string, desc: string, domainsStr: string, prompt: string) => {
     const n = name.trim();
@@ -392,7 +396,14 @@ function Index() {
               return (
                 <div
                   key={a.name}
-                  onClick={() => { setActive(a.name); setChatOpen(true); }}
+                  onClick={() => {
+                    if (a.isVideoAgent) {
+                      void navigate({ to: "/yt-agent" });
+                      return;
+                    }
+                    setActive(a.name);
+                    setChatOpen(true);
+                  }}
                   className={`group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-4 transition ${
                     isSelected
                       ? isSuper ? "border-brand bg-brand/10" : "border-brand bg-tile-active"
@@ -492,7 +503,7 @@ function Index() {
       </main>
 
       <AgentChat
-        agents={visibleAgents.length ? visibleAgents : defaultAgents}
+        agents={chatAgents.length ? chatAgents : fallbackChatAgents}
         active={active}
         open={chatOpen}
         onOpenChange={setChatOpen}

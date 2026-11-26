@@ -24,7 +24,7 @@ export const Route = createFileRoute("/feed")({
   component: FeedPage,
 });
 
-const baseSectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent);
+const baseSectors = DEFAULT_INTELLIGENCE_AGENTS.filter((a) => !a.isSuperAgent && !a.isVideoAgent);
 const superAgent = DEFAULT_INTELLIGENCE_AGENTS.find((a) => a.isSuperAgent)!;
 
 function FeedPage() {

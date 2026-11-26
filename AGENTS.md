@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 - Keep sector chat in a dedicated controlled sheet component with per-sector in-memory conversations; this isolates the UI-first demo from future live news and AI integration.
 - The /feed page builds sector articles client-side (search → AI rewrite to JSON) and caches them per sector per Dhaka day in localStorage; this keeps the no-backend architecture.
+- Keep YT Agent channel feeds in a narrow server function that fetches only validated YouTube public RSS; user-specific channel settings and AI data stay in browser storage to avoid introducing a database or exposing private data.

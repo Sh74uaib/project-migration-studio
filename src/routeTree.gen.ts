@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as YtAgentRouteImport } from './routes/yt-agent'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const YtAgentRoute = YtAgentRouteImport.update({
+  id: '/yt-agent',
+  path: '/yt-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/settings': typeof SettingsRoute
+  '/yt-agent': typeof YtAgentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/settings': typeof SettingsRoute
+  '/yt-agent': typeof YtAgentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/feed': typeof FeedRoute
   '/settings': typeof SettingsRoute
+  '/yt-agent': typeof YtAgentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feed' | '/settings'
+  fullPaths: '/' | '/feed' | '/settings' | '/yt-agent'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feed' | '/settings'
-  id: '__root__' | '/' | '/feed' | '/settings'
+  to: '/' | '/feed' | '/settings' | '/yt-agent'
+  id: '__root__' | '/' | '/feed' | '/settings' | '/yt-agent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FeedRoute: typeof FeedRoute
   SettingsRoute: typeof SettingsRoute
+  YtAgentRoute: typeof YtAgentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/yt-agent': {
+      id: '/yt-agent'
+      path: '/yt-agent'
+      fullPath: '/yt-agent'
+      preLoaderRoute: typeof YtAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FeedRoute: FeedRoute,
   SettingsRoute: SettingsRoute,
+  YtAgentRoute: YtAgentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

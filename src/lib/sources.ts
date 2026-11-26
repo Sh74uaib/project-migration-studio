@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Shield,
   Sparkles,
+  Youtube,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ export type AgentDefinition = {
   prompts: string[];
   preferredModel?: string;
   isSuperAgent?: boolean;
+  isVideoAgent?: boolean;
   instruction?: string;
 };
 
@@ -195,6 +197,18 @@ export const DEFAULT_INTELLIGENCE_AGENTS: AgentDefinition[] = [
     ],
   },
   {
+    id: "youtube-intelligence",
+    name: "YT Agent",
+    shortName: "YT",
+    desc: "ইউটিউব চ্যানেলের নতুন ভিডিও, AI প্রবন্ধ ও ভিডিও-সহকারী।",
+    iconName: "Youtube",
+    icon: Youtube,
+    domains: ["youtube.com"],
+    systemPrompt: "You are ORION's YT Agent. Help the user understand videos using only the provided channel information, descriptions, and verified search excerpts. Never invent a transcript or exact quote. Answer in Bengali unless asked otherwise.",
+    prompts: ["এই ভিডিওর মূল শিক্ষাগুলো কী?", "ভিডিওর বিষয়টি সহজ করে বোঝাও", "কোন তথ্যগুলো নিশ্চিত নয়?"],
+    isVideoAgent: true,
+  },
+  {
     id: "orion-super",
     name: "ORION Super Agent",
     shortName: "Omni Brain",
@@ -239,6 +253,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   TrendingUp,
   Shield,
   Sparkles,
+  Youtube,
 };
 
 export function getAgentIcon(iconName?: string): LucideIcon {
