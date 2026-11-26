@@ -88,6 +88,7 @@ function Index() {
     desc: c.desc || "Your custom agent.",
     id: c.id || c.name.toLowerCase().replace(/\s+/g, "-"),
     isSuperAgent: false,
+    isVideoAgent: false,
   }));
 
   const allAgents = [...defaultAgents, ...customAgentItems];
