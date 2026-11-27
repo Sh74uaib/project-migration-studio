@@ -9,6 +9,7 @@ import {
   Sparkles,
   Plus,
   Trash2,
+  RotateCcw,
   AlertCircle,
   X,
   Bell,
@@ -24,6 +25,8 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import {
   DEFAULT_INTELLIGENCE_AGENTS,
   getAgentIcon,
+  hideAgent as hideAgentName,
+  restoreAgent as restoreAgentName,
   type CustomAgentItem,
 } from "@/lib/sources";
 
@@ -77,6 +80,7 @@ function Index() {
   const [custom, setCustom] = usePersisted<CustomAgentItem[]>("orion.customAgents", []);
   const [hidden, setHidden] = usePersisted<string[]>("orion.hiddenAgents", []);
   const [addOpen, setAddOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newDomains, setNewDomains] = useState("");
@@ -93,6 +97,7 @@ function Index() {
 
   const allAgents = [...defaultAgents, ...customAgentItems];
   const visibleAgents = allAgents.filter((a) => !hidden.includes(a.name));
+  const removedAgents = allAgents.filter((a) => hidden.includes(a.name));
   const chatAgents = visibleAgents.filter((agent) => !agent.isVideoAgent);
   const fallbackChatAgents = defaultAgents.filter((agent) => !agent.isVideoAgent);
 
@@ -100,9 +105,9 @@ function Index() {
     const n = name.trim();
     if (!n) return false;
     // If existing agent was hidden, just unhide it
-    if (allAgents.some((a) => a.name.toLowerCase() === n.toLowerCase())) {
-      const existing = allAgents.find((a) => a.name.toLowerCase() === n.toLowerCase())!;
-      setHidden(hidden.filter((x) => x !== existing.name));
+    const existing = allAgents.find((a) => a.name.toLowerCase() === n.toLowerCase());
+    if (existing) {
+      setHidden((previous) => restoreAgentName(previous, existing.name));
       return true;
     }
     const domains = domainsStr
@@ -121,10 +126,17 @@ function Index() {
   };
 
   const deleteAgent = (name: string) => {
-    // Only hide from view — preserve chat history
-    setHidden([...hidden, name]);
-    const fallback = visibleAgents.find((a) => a.name !== name)?.name ?? defaultAgents[0]?.name ?? "";
-    if (active === name) setActive(fallback);
+    setHidden((previous) => hideAgentName(previous, name));
+    const remainingAgents = visibleAgents.filter((agent) => agent.name !== name);
+    if (active === name) {
+      const fallback = remainingAgents.find((agent) => !agent.isVideoAgent) ?? remainingAgents[0];
+      if (fallback) setActive(fallback.name);
+      else setChatOpen(false);
+    }
+  };
+
+  const restoreAgent = (name: string) => {
+    setHidden((previous) => restoreAgentName(previous, name));
   };
 
   useEffect(() => {
@@ -316,9 +328,15 @@ function Index() {
               <h2 className="text-xl font-bold tracking-tight">Intelligence sectors</h2>
               <p className="mt-1 text-sm text-muted-foreground">Pick a sector to talk with its specialized agent.</p>
             </div>
-            <button onClick={() => setAddOpen(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-              <Plus className="h-3.5 w-3.5" /> কাস্টম এজেন্ট
-            </button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setManageOpen(true)}>
+                <RotateCcw className="size-3.5" />
+                সরানো এজেন্ট{removedAgents.length > 0 ? ` (${removedAgents.length})` : ""}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)} className="text-muted-foreground hover:text-foreground">
+                <Plus className="size-3.5" /> কাস্টম এজেন্ট
+              </Button>
+            </div>
           </div>
 
           <Dialog open={addOpen} onOpenChange={(o) => { setAddOpen(o); if (!o) { setNewName(""); setNewDesc(""); setNewDomains(""); setNewPrompt(""); } }}>
@@ -388,11 +406,54 @@ function Index() {
             </DialogContent>
           </Dialog>
 
+          <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+            <DialogContent className="max-h-[min(80vh,640px)] max-w-lg overflow-y-auto">
+              <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+                <RotateCcw className="size-5 text-brand" />
+                এজেন্ট ম্যানেজ করুন
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                সরানো এজেন্টগুলো এখান থেকে আবার ফিরিয়ে আনুন। তাদের আগের কথোপকথন অক্ষুণ্ণ আছে।
+              </DialogDescription>
+              {removedAgents.length > 0 ? (
+                <>
+                  <div className="divide-y divide-border overflow-hidden rounded-md border border-border">
+                    {removedAgents.map((agent) => {
+                      const Icon = agent.icon;
+                      return (
+                        <div key={agent.name} className="flex items-center gap-3 px-3 py-3">
+                          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                            <Icon className="size-4" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold">{agent.name}</p>
+                            <p className="line-clamp-1 text-xs text-muted-foreground">{agent.desc}</p>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => restoreAgent(agent.name)}>
+                            <RotateCcw className="size-3.5" /> ফিরিয়ে আনুন
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => setHidden([])}>
+                      সব ফিরিয়ে আনুন
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+                  কোনো সরানো এজেন্ট নেই।
+                </p>
+              )}
+            </DialogContent>
+          </Dialog>
+
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {visibleAgents.map((a) => {
               const Icon = a.icon;
               const isSelected = active === a.name;
-              const isCustom = custom.some((c) => c.name === a.name);
               const isSuper = (a as any).isSuperAgent;
               return (
                 <div
@@ -415,16 +476,17 @@ function Index() {
                     <div className={`grid h-10 w-10 place-items-center rounded-xl ${isSuper ? "bg-brand-soft" : "bg-background"}`}>
                       <Icon className={`h-5 w-5 ${isSuper ? "text-brand" : "text-foreground"}`} />
                     </div>
-                    {isCustom && (
-                      <button
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={(e) => { e.stopPropagation(); deleteAgent(a.name); }}
-                        className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                        title="এজেন্ট হাইড করুন (হিস্ট্রি অক্ষুণ্ণ থাকবে)"
-                        aria-label="এজেন্ট হাইড করুন"
+                        className="size-8 text-muted-foreground opacity-100 transition-opacity hover:text-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+                        title="এজেন্ট সরান; কথোপকথন থাকবে"
+                        aria-label={`${a.name} এজেন্ট সরান`}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+                        <Trash2 className="size-3.5" />
+                    </Button>
                   </div>
                   <div className="mt-6">
                     <div className="font-semibold text-sm flex items-center gap-1.5">

@@ -261,6 +261,14 @@ export function getAgentIcon(iconName?: string): LucideIcon {
   return ICON_MAP[iconName] || Sparkles;
 }
 
+export function hideAgent(hiddenAgents: string[], name: string): string[] {
+  return hiddenAgents.includes(name) ? hiddenAgents : [...hiddenAgents, name];
+}
+
+export function restoreAgent(hiddenAgents: string[], name: string): string[] {
+  return hiddenAgents.filter((agentName) => agentName !== name);
+}
+
 export function findAgentConfig(nameOrId: string, customAgents: CustomAgentItem[] = []): AgentDefinition {
   const norm = nameOrId.trim().toLowerCase();
 

@@ -163,12 +163,18 @@ export function AgentChat({
     : ["আজকের মূল খবরগুলো বলো", "কেন এটা গুরুত্বপূর্ণ?", "Give me a quick briefing"];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background" role="dialog" aria-modal="true" aria-label={`${active} agent conversation`}>
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-brand-soft/70 to-transparent" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-3 backdrop-blur-sm sm:p-6">
+      <div
+        className="relative flex h-[min(94vh,900px)] max-h-[900px] w-full max-w-[980px] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl sm:rounded-3xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${active} agent conversation`}
+      >
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-brand-soft/70 to-transparent" />
 
-      {/* Header */}
-      <header className="relative border-b border-border bg-background/70 backdrop-blur">
+        {/* Header */}
+        <header className="relative shrink-0 border-b border-border bg-background/70 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[860px] items-center gap-4 px-5">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
             <Icon className="size-5" />
@@ -257,24 +263,19 @@ export function AgentChat({
 
       {/* Conversation */}
       <div className="relative min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[860px] px-5 py-10">
+        <div className="mx-auto max-w-[860px] px-5 py-5 sm:py-7">
           {messages.length === 0 ? (
-            <div className="flex min-h-[55vh] flex-col items-center justify-center text-center">
-              <span className="grid size-16 place-items-center rounded-2xl bg-brand-soft text-brand">
+            <div className="flex min-h-0 flex-col items-center justify-center py-3 text-center">
+              <span className="grid size-14 place-items-center rounded-2xl bg-brand-soft text-brand">
                 <Icon className="size-8" strokeWidth={1.5} />
               </span>
-              <h2 className="mt-6 font-display text-4xl leading-tight md:text-5xl">
+              <h2 className="mt-4 font-display text-3xl leading-tight md:text-4xl">
                 Let’s catch up<br />on <em className="text-brand">{active}.</em>
               </h2>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
                 আমি আপনার {agentConfig.name}। আসল AI মডেল এবং ভেরিফাইড সোর্স ফিল্টারিংয়ের সাথে সংযুক্ত। খবর ও তথ্য নিয়ে প্রশ্ন করুন।
               </p>
-              {watchlist.length > 0 && (
-                <div className="mt-5 max-w-md rounded-xl bg-brand-soft p-3 text-xs leading-relaxed text-foreground">
-                  Watchlist: {watchlist.join(", ")} — এসব নিয়ে আপডেট থাকলে আমি গুরুত্ব দেব।
-                </div>
-              )}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 {suggestedPrompts.map((prompt) => (
                   <Button
                     key={prompt}
@@ -404,16 +405,16 @@ export function AgentChat({
         </div>
       </div>
 
-      {/* Composer */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(draft);
-        }}
-        className="relative shrink-0 border-t border-border bg-background/70 backdrop-blur"
-      >
-        <div className="mx-auto max-w-[860px] px-5 pb-6 pt-4">
-          <div className="flex items-end gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm focus-within:border-brand/50">
+        {/* Composer */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(draft);
+          }}
+          className="relative z-10 shrink-0 bg-background/75 px-4 py-3 backdrop-blur sm:px-6"
+        >
+          <div className="mx-auto max-w-[860px]">
+            <div className="flex items-end gap-3 rounded-2xl border border-border bg-card p-2.5 shadow-lg focus-within:border-brand/50">
             <Textarea
               aria-label="Message your agent"
               placeholder={`${agentConfig.name}-কে প্রশ্ন করুন (যেমন: আজকের সর্বশেষ পরিস্থিতি কী?)…`}
@@ -437,14 +438,15 @@ export function AgentChat({
             >
               <ArrowUp className="size-4" />
             </Button>
+            </div>
+            <p className="mt-2 text-center text-[10px] text-muted-foreground">
+              Live AI Connected · Domain-filtered Real-Time Intelligence · Esc to close
+            </p>
           </div>
-          <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
-            Live AI Connected · Domain-filtered Real-Time Intelligence · Esc to close
-          </p>
-        </div>
-      </form>
+        </form>
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </div>
     </div>
   );
 }

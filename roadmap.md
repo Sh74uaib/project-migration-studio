@@ -1,6 +1,5 @@
-# YT Agent
+# Agent management and chat polish
 
-- [ ] Add a YT Agent entry that opens a dedicated Orion workspace without changing the existing visual system.
-- [ ] Build the official YouTube RSS feed, filters/search, channel manager, video reader, and video-specific AI chat.
-- [ ] Keep personal channel settings and cached work in browser storage; avoid inventing unavailable transcript content.
-- [ ] Add focused tests, verify desktop/mobile behavior and build logs, then commit the finished work.
+- [ ] Let the user remove any built-in or custom agent from the homepage and restore it later.
+- [ ] Restyle the agent conversation as a centered floating card with a matching compact composer.
+- [ ] Add focused behavior tests, verify the chat and agent controls, inspect build logs, and commit the changes.
